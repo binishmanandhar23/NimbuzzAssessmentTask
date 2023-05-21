@@ -10,8 +10,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -172,7 +175,7 @@ private fun ListRow(
     sizeOfList: Int,
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
-        for(rowIndex in 0 until totalItemsInARow){
+        for (rowIndex in 0 until totalItemsInARow) {
             val actualItemIndex by remember(sizeOfList, columnIndex, rowIndex) {
                 derivedStateOf {
                     getItemNumberBasedOnColumnAndRowIndex(columnIndex, rowIndex, sizeOfList)
@@ -196,22 +199,44 @@ private fun ListRow(
                     imageSize = imageSize,
                     uri = if (isDog) uriForDog else uriForCat,
                     contentDescription = if (isDog) "Dog" else "Cat"
-                )
+                ) {
+                    Text(
+                        text = "$actualItemIndex",
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .background(color = Color.Gray.copy(alpha = 0.5f), shape = CircleShape).padding(2.dp),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun ImageDesign(imageSize: Dp, uri: Uri, contentDescription: String) = AsyncImage(
-    model = ImageRequest.Builder(LocalContext.current)
-        .data(uri)
-        .crossfade(true)
-        .build(),
-    placeholder = rememberVectorPainter(image = Icons.Default.Image),
-    contentDescription = contentDescription,
-    contentScale = ContentScale.Crop,
+private fun ImageDesign(
+    imageSize: Dp,
+    uri: Uri,
+    contentDescription: String,
+    content: @Composable BoxScope.() -> Unit
+) = Box(
     modifier = Modifier
-        .size(imageSize)
+        .size(
+            imageSize
+        )
         .clip(RoundedCornerShape(5.dp))
-)
+) {
+    AsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(uri)
+            .crossfade(true)
+            .build(),
+        placeholder = rememberVectorPainter(image = Icons.Default.Image),
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.size(
+            imageSize
+        )
+    )
+    content(this)
+}
